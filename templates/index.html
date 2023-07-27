@@ -1,0 +1,584 @@
+<html>
+<head>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+    <script src="http://netbeast.github.io/colorsys/browser.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.2.0/fabric.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/4.2.0/fabric.js"></script>
+
+</head>
+<style>
+    table {
+      font-family: arial, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+    
+    td, th {
+      border: 1px solid #dddddd;
+      text-align: left;
+      padding: 8px;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #dddddd;
+    }
+    </style>
+<title>BIOMASS ESTIMATION</title>
+{% load static %}
+<body>
+    <div class="container-fluid">
+        
+        <div class="row">
+            <div class="col-sm-12">
+                <nav class="navbar navbar-expand-lg navbar-light">
+                    <div class="container">
+                        <a class="navbar-brand" href="#">
+                            <img src="/static/logo.png" alt="" width="300"  class="d-inline-block align-text-top">
+                        </a>
+                        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                
+                        </div>
+                    </div>
+                </nav>
+
+             </div>       
+        </div>
+        <hr>
+        
+        <div class="row">
+            <div class="col-sm-12">
+                <div>
+                    <label for="img">Select source image:</label>
+                    <input type="file" id="img" name="img" accept="image/*">
+                    <!-- <input type="submit"> -->
+                    <p>Uploaded filename:<b> <span class="output"></span></b></p>
+                </div>
+
+
+                <div>
+                
+                <!--<label>K constant:</label>
+                <label for="cars">Choose type of fish</label>
+                <select name="fish_type" id="fish_type">
+                <option value="char">char</option>
+                <option value="trout">trout</option>
+                <option value="s_trout">salmon trout</option>
+                <option value="tilapia">tilapia</option>
+                </select>
+                <input  style="width:20%;" id="no-cluster" name="no-cluster" type='number' step='0.1' value='0.0' placeholder='0.0' min="0.0" />-->
+                                   
+                <button type="button" id="send" onclick="sendRequest()">Send</button>
+                <br></br>
+                <div style="width: 900px; overflow: auto;">
+
+                    <canvas id="canvas2" width="700">
+                        Your browser does not support the canvas element.
+                    </canvas>
+                </div>
+
+
+            </div>
+            
+            <div class="col-sm-6">
+
+                <div id="roi">
+
+                </div>
+                            
+            </div>
+
+        
+        </div>
+        <br>
+        {% block content%}
+        <div id='result_table' action = "output" class="col-sm-12" style="padding-top: 50px;">
+            
+            
+        </div>    
+        {%  endblock %}
+        <br>
+
+    </div>
+    </div>
+    <div id="loading"
+        style="display : none; margin: 0px; padding: 0px; position: fixed; right: 0px; top: 0px; width: 100%; height: 100%; background-color: rgb(102, 102, 102); z-index: 30001; opacity: 0.8;">
+        <p style="position: absolute; color: White; top: 50%; left: 45%;">
+            Processing, please wait...
+
+        </p>
+    </div>
+    <script>
+        
+    </script>
+
+    <script type="text/javascript">
+        var fileUpload = document.getElementById('img');
+        var canvas = new fabric.Canvas('canvas2', { selection: false });
+        var rectangle, isDown, origX, origY;
+        canvas.setWidth(550);
+        canvas.setHeight(550);
+        var canvasHeight = canvas.height;
+        var canvasWidth = canvas.width;
+        var isCircle = false;
+        var imageSrc = $('#img').val();
+        var isDown = false;
+        var sequenceNo = 0;
+        $(document).ready(function () {
+            $(document).ajaxStart(function () {
+                $("#loading").show();
+            }).ajaxStop(function () {
+                $("#loading").hide();
+            });
+        });
+
+        fabric.Canvas.prototype.RemoveNonGroup = function () {
+            var object = null,
+                objects = this.getObjects();
+            for (var i = 0, len = this.size(); i < len; i++) {
+                if (objects[i].type != "group") {
+                    canvas.remove(objects[i]);
+                }
+            }
+        };
+
+        document.getElementById('img').addEventListener("change", function (e) {
+            sequenceNo = 0;
+            $("#cluster-div").empty();
+            //canvas.RemoveNonGroup();
+            var file = e.target.files[0];
+            var reader = new FileReader();
+            reader.onload = function (f) {
+                var data = f.target.result;
+                image_string = f.target.result;
+                fabric.Image.fromURL(data, function (image) {
+                    var maxWidth = image.width; // Max width for the image
+                    var maxHeight = image.height;
+
+                    var new_height = 0;
+                    var new_width = 0;
+
+                    var ratio = 0;
+
+                    ratio = maxWidth / image.width;   // get ratio for scaling image
+                    new_height = image.height * 0.3;    // Reset height to match scaled image
+                    new_width = maxWidth*0.3;    // Reset width to match scaled image
+
+                    canvas.width = maxWidth;
+                    canvas.height = new_height;
+                    if(image.width < 600){
+                        canvasHeight = new_height * 1;
+                        canvasWidth = new_width * 1;
+                    }
+                    else{
+                        canvasHeight = new_height;
+                        canvasWidth = new_width;
+                    }
+                    
+
+                    canvas.setWidth(canvasWidth);
+                    canvas.setHeight(canvasHeight);
+
+                    image.set({
+                        top: 0,
+                        left: 0,
+                        scaleX: canvasWidth / image.width,
+                        scaleY: canvasHeight / image.height,
+                    });
+                    canvas.setBackgroundImage(image);
+                    canvas.renderAll();
+
+                });
+
+            };
+
+            reader.readAsDataURL(file);
+        });
+
+        fabric.Object.prototype.resizeToScale = function () {
+            
+            this['width'] = this['width'] * this['scaleX'];
+            this['height'] = this['height'] * this['scaleY'];
+            
+            this['scaleX'] = 1;
+            this['scaleY'] = 1;
+
+            this.setCoords();
+
+        }
+
+        canvas.on('object:scaling', function (e) {
+            e.target.resizeToScale();
+        });
+
+
+        canvas.on('object:modified', function (e) {
+
+            try {
+
+                var o = e.target;
+                
+                var movingObject = canvas.getActiveObject();
+
+
+                var rectangleObj = new fabric.Rect({
+                    left: movingObject.get('left'),
+                    top: movingObject.get('top'),
+                    padding: 0,
+                    fill: 'transparent',
+                    stroke: 'red',
+                    strokeWidth: 1,
+                    width: movingObject.get('width'),
+                    height: movingObject.get('height'),
+                    id: movingObject.get("id"),
+                    selectable: true,
+                    originX: 'left',
+                    originY: 'top',
+                    hoverCursor: 'crosshair',
+                    angle: movingObject.get('angle'),
+                    hasRotatingPoint: false
+                    
+                });
+
+                
+                canvas.remove(movingObject);
+                canvas.add(rectangleObj);
+                canvas.renderAll();
+
+                canvas.setActiveObject(group);
+                
+                canvas.renderAll();
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
+
+        fabric.Object.prototype.resizeToScale = function () {
+            
+            this['width'] = this['width'] * this['scaleX'];
+            this['height'] = this['height'] * this['scaleY'];
+            
+            this['scaleX'] = 1;
+            this['scaleY'] = 1;
+
+            this.setCoords();
+
+        }
+
+        canvas.on('object:scaling', function (e) {
+            e.target.resizeToScale();
+        });
+
+
+        canvas.on('object:modified', function (e) {
+
+            try {
+
+                var o = e.target;
+                
+                var movingObject = canvas.getActiveObject();
+
+                var rectangleObj = new fabric.Rect({
+                    left: movingObject.get('left'),
+                    top: movingObject.get('top'),
+                    padding: 0,
+                    fill: 'transparent',
+                    stroke: 'red',
+                    strokeWidth: 1,
+                    width: movingObject.get('width'),
+                    height: movingObject.get('height'),
+                    id: movingObject.get("id"),
+                    selectable: true,
+                    originX: 'left',
+                    originY: 'top',
+                    hoverCursor: 'crosshair',
+                    hasRotatingPoint: false
+                });
+
+                
+                canvas.remove(movingObject);
+                canvas.add(rectangleObj);
+                canvas.renderAll();
+
+                canvas.setActiveObject(group);
+                
+                canvas.renderAll();
+            }
+            catch (err) {
+                console.log(err);
+            }
+        });
+
+        canvas.on('mouse:down', function (o) {
+            if (o.target === null) {
+                sequenceNo += 1;
+                var ctx = $('#canvas2').get(0).getContext('2d', { selection: false });
+
+                var mouse = canvas.getPointer(o.o);
+                var x = parseInt(mouse.x);
+                var y = parseInt(mouse.y);
+
+                var data = ctx.getImageData(x, y, 1, 1).data;
+
+                var getrgb = [].slice.call(data, 0, 3).join()
+
+                var pointer = canvas.getPointer(o.e);
+
+                if (canvas.findTarget(o.e)) { };
+
+                isDown = true;
+                origX = pointer.x;
+                origY = pointer.y;
+
+                rectangle = new fabric.Rect({
+                    left: origX,
+                    top: origY,
+                    fill: 'transparent',
+                    stroke: 'red',
+                    strokeWidth: 1,
+                    width: 0,
+                    height: 0,
+                    id: sequenceNo,
+                    selectable: true,
+                    hoverCursor: 'crosshair'
+
+                });
+                canvas.add(rectangle);
+            }
+        });
+
+        canvas.on('mouse:move', function (o) {
+            if (!isDown) return;
+            //console.log(o.target);
+            if (o.target === null) {
+                var pointer = canvas.getPointer(o.e);
+
+                if (origX > pointer.x) {
+                    rectangle.set({ left: Math.abs(pointer.x) });
+                }
+                if (origY > pointer.y) {
+                    rectangle.set({ top: Math.abs(pointer.y) });
+                }
+
+                rectangle.set({ width: Math.abs(origX - pointer.x) });
+                rectangle.set({ height: Math.abs(origY - pointer.y) });
+
+                canvas.renderAll();
+            }
+        });
+
+        canvas.on('mouse:up', function (o) {
+
+            if (isDown) {
+                rectangleObj = new fabric.Rect({
+                    left: rectangle.left,
+                    top: rectangle.top,
+                    fill: 'transparent',
+                    stroke: 'red',
+                    strokeWidth: 1,
+                    width: rectangle.width,
+                    height: rectangle.height,
+                    id: rectangle.id,
+                    selectable: true,
+                    hoverCursor: 'crosshair'
+
+                });
+                canvas.remove(rectangle);
+                canvas.add(rectangleObj);
+            }
+
+            isDown = false;
+        });
+
+        var source_string = "None";
+        var reference_string = "None";
+        var image_input = null;
+        document.getElementById('img').addEventListener("change", function (e) {
+            
+            var file = e.target.files[0];
+            console.log(file);
+            var reader = new FileReader();
+
+            reader.onloadend = function () {
+                source_string = reader.result; 
+            }
+            reader.readAsDataURL(file);
+        });
+
+        
+
+        function readSourceImg(){
+            if(this.files && this.files[0]){
+                var FR = new FileReader();
+                FR.onload = function(e){
+                    var img = new Image();
+                    console.log(e.target.result);
+                    source_string = e.target.result;
+                }
+            }
+            console.log('sss');
+        }        
+
+       
+
+        function sendRequest() {
+
+            fileName = document.querySelector('#img').value;
+			//alert(fake_path.split("\\").pop())
+            extension = fileName.split("\\").pop();
+            document.querySelector('.output')
+                                     .textContent = extension;
+
+
+            var image_width = canvas.width;
+            var image_height = canvas.height;
+
+        
+            source_string = source_string.replace("data:image/jpeg;base64,", "");
+            source_string = source_string.replace("data:image/png;base64,", "");
+            source_string = source_string.replace("data:image/jpg;base64,", "");
+
+
+            var canvasObjects = canvas.getObjects();
+            var objetcs = [];
+
+            borderRadius = rx = ry = 1;
+
+            canvasObjects.forEach(addElementList);
+
+            function addElementList(item, index) {
+                // var id = index + 1;
+                var bl = [item.aCoords.bl['x'] * rx + borderRadius, item.aCoords.bl['y'] * ry - borderRadius];
+                var br = [item.aCoords.br['x'] * rx - borderRadius, item.aCoords.br['y'] * ry - borderRadius];
+                var tl = [item.aCoords.tl['x'] * rx + borderRadius, item.aCoords.tl['y'] * ry + borderRadius];
+                var tr = [item.aCoords.tr['x'] * rx - borderRadius, item.aCoords.tr['y'] * ry + borderRadius];
+                var jsonObject = {
+                    "sequnece": item.id,
+                    // "rect_points" : [item.left, item.top, item.width, item.height]
+                    "rect_points": [tr, tl, bl, br]
+                }
+                objetcs.push(jsonObject);
+            }
+
+            var jsonData = {
+
+                "source_img": source_string, //canvas.toDataURL(), //
+                //"reference_img": reference_string,
+
+                "type": "valve",
+                "folder_path": "none",
+                "image_width": parseInt(canvasWidth),
+                "image_height": parseInt(canvasHeight),
+                //"no_cluster": document.getElementById("fish_type").value != "" ? document.getElementById("fish_type").value : 0,
+                "rois": objetcs,
+                //"option": $('input[name="option"]:checked').val(),
+                //"thresh_va":thresh_va,
+            }
+            console.log(jsonData);
+
+            $.ajax({
+                url: "result",
+                type: "post",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify(jsonData),
+                success: function (response) {
+                    $("#roi").html(` <div id="roi1" class="col-6">
+                        </div><br>
+                        <div id="roi2" class="col-6">
+                        </div><br>
+                        `)   
+
+                    $("#roi1").html(`<br><label><b>After Processing<b></label><br> <img width=900  src="/static/matched.png?v=${Math.random()}" overflow=auto /><br>`) 
+                    //$("before").html(`<br><label><b>RESULT<b></label><br> <img src="/static/matched.png?v=${Math.random()}" width="60%"  /><br><a href="/img" class="button button1" >Download</a>`)
+                    //if(jsonData['thresh_va'] =='1'){
+                    //$("#roi2").html(`<br><label><b>After Thresh<b></label><br> <img src="/static/after_thresholding.jpg?v=${Math.random()}"  /><br><a href="/img2" class="button button1" >Download</a>`)
+                    //}
+                    $("#result_table").empty();
+                    
+                    //////////////////////
+
+                    const element = document.getElementById("result_table");
+                    table_html = "<h2>BIOMASS ESTIMATION</h2><table>"
+
+                    standard_len=0
+                    console.log(response);
+                    fish_details = response['fish_details']
+                    total_weight = response['total_weight']
+                    total_fish=response['total_count']
+                    a_length=response['a_length']
+                    fish_health_status=response['fish_status']
+                    table_html += "<tr><th>Fish ID</th><th>Length (cm)</th><th>Height (cm)</th><th><h6 ><b>Biomass Weight</b></h6></th>"  
+                    for (const [fish_key, fish_value] of Object.entries(fish_details)) {
+                        console.log(fish_key, fish_value);
+                        if(fish_value[0]>0){ 
+                        table_html += "<tr ><td>" + String(fish_key) + "</td><td>" + String(fish_value[0]) + "</td><td>" + String(fish_value[2]) + "</td><td>" + String(fish_value[1]) + "</td>"
+                        
+                        }
+                    table_html += "<tr> <th>Fish health status</th><th>Body bleeding (excluding fin and tail)</th> <th>Tail bleeding</th><th>Fins bleeding(pixels)</th>" 
+                    table_html += "<tr><td>" + String(fish_health_status) + "</td><td>" + String(fish_value[6]) + "</td><td>" + String(fish_value[5]) + "</td><td>"
+                    console.log(fish_value[4])
+                    let length_array = fish_value[4].length;
+                    for (let i = 0; i < length_array; i++) {
+                        fin_id=(parseInt(i)+1)
+                        if(fish_value[4][i]=="No"){     
+                        table_html += "finID "+String(fin_id)+"=No<br>"
+                        }
+                        else{
+
+                        table_html +="finID"+String(fin_id)+" =Yes <br> "
+                        }
+                     
+                    }
+                }  
+                    table_html += "</td></tr>"
+                    //table_html += "<tr><th>Total count </th> <th>Average Length(cm)</th><th >Average Height </th><th><h6 ><b>BM Weight Estimation</b></h6></th>" 
+                    //table_html += "<tr><td>" + String(total_fish) + "</td><td>" + String(a_length) + "</td><td>" + String(a_height) + "</td><td>" + String(total_weight) + "</td></tr>"
+                    table_html += "</table>"
+                    element.innerHTML = element.innerHTML + table_html
+                 //weight=response[1][1]
+                 //console.log(weight)
+
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log(textStatus, errorThrown);
+                }
+            });
+        }
+
+        function downloadFile(path) {
+
+        // var file = new File(["aa"], path);
+        var link = document.createElement("a");
+        link.id = "download"
+        // link.download =file.name;
+        // link.href = file;
+        // link.click();
+        $('download').click(function(e) {
+            e.preventDefault();  //stop the browser from following
+            window.location.href = path;
+        });
+        link.click();
+        }
+
+        function fileDownload(path) {
+        window.location = path;
+        }
+
+        function downloadURI(uri, name) 
+        {
+        var link = document.createElement("a");
+        // If you don't know the name or want to use
+        // the webserver default set name = ''
+        link.setAttribute('download', name);
+        link.href = uri;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        }
+
+    </script>
+</body>
+</html>

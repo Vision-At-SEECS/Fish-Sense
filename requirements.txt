@@ -1,0 +1,6 @@
+Django==3.2.8
+djangorestframework==3.12.4
+imutil==0.3.4
+imutils==0.5.4
+tensorflow==2.13.0
+scipy==1.11.1
