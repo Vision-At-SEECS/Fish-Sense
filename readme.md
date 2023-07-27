@@ -3,7 +3,7 @@
 # Introduction
 We present a three-tiered process for automated  biomass estimation and disease detection as detailed in the Figure. The initial step involves generating a segmentation mask of the fish using Mask-RCNN, which aids in calculating crucial parameters such as length and height. Simultaneously, the fish species is identified leveraging a Convolutional Neural Network (CNN). In the next step, these parameters are incorporated to estimate the biomass. In addition we have trained a CNN module to classify fish into healthy and unhealthy categories, and subsequently identifying symptoms and locations of bacterial infections if a fish is classified as unhealthy. 
 
-![Alt ](.\Fig\Methodology_diagram.png)
+![Alt ](/Fig/Methodology_diagram.png)
 
 # Abstract
 
