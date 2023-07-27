@@ -77,10 +77,15 @@ Proceed with the  generated link. http://127.0.0.1:8000/
 Copy and paste this link in any of the supported browsers (Firefox, Chrome, and Microsoft Edge) by simply copying and pasting it into the address bar.
 
 Upload an image and press Send button 
-![Alt ](/Fig/Demo_prototype.png)
+
+
+![Alt ](/Fig/Demo_prototype.jpg)
+
 
 The output will be processed image and resulting table 
-![Alt ](/Fig/Demo_prototype2.png)
+
+
+![Alt ](/Fig/Demo_prototype2.jpg)
 
 
 # Authors 
