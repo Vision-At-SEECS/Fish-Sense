@@ -76,7 +76,7 @@ Proceed with the  generated link. http://127.0.0.1:8000/
 
 Copy and paste this link in any of the supported browsers (Firefox, Chrome, and Microsoft Edge) by simply copying and pasting it into the address bar.
 
-Upload an image and press Send button 
+Upload an image and press Send button:
 
 
 ![Alt ](/Fig/Demo_prototype.jpg)
