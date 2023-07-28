@@ -16,7 +16,17 @@ To run this project trained models can be obtained on permission from the author
 
 https://docs.google.com/forms/d/e/1FAIpQLScHzbEzj97v6YZn3EdU8Pt4aMXj5cGPe4qJ05mQrM6df54tJg/viewform?usp=sf_link
 
-Dataset used in this project can also be requested using same form. 
+Dataset used in this project can also be requested using same form.
+There are four datasets available that can be utilized for training deep learning models in various tasks:
+
+- Fish Segmentation
+- Species Classification
+- Healthy/Unhealthy Classification
+- Fish Body Part Segmentation
+
+The code required to train the models from scratch can be found in the supporting materials, specifically under the "colab training - file" folder. By using this code, you can obtain the weights and set up the models as per your needs.
+
+Alternatively, if you prefer to use pre-trained models, you can directly request them from the authors. Once obtained, simply place the trained models in the designated "trained models" folder for seamless integration into your project.
 
 ## Requirements
 -   Python > 3.7
@@ -39,17 +49,18 @@ After running this command, you can activate the virtual environment using:
 ```bash 
 conda activate your_env_name
 ```
-Once the virtual env is created install pytorch using command (For windows and CPU only)  
+Once the virtual env is created install pytorch using command (For windows and CPU only):  
 ```bash 
 conda install pytorch torchvision torchaudio cpuonly -c pytorch
 ```
-Otherwise for GPU enabled environment and for linux OS, various installation commands can be found here https://pytorch.org/get-started/locally/ <br />
+Otherwise for GPU enabled environment or for linux OS or both, various installation commands can be found here: https://pytorch.org/get-started/locally/ <br />
+
 Install OpenCV using command. 
 
 ```bash
  pip install opencv-python 
 ```
-Note:Pytorch and OpenCV are the prerequisite to install detectron2
+Note: Pytorch and OpenCV are the prerequisite to install detectron2
 
 Install the detectron2 repository on local PC git clone 
 
@@ -74,15 +85,15 @@ python manage.py runserver
 If the libraries are installed correctly:
 Proceed with the  generated link. http://127.0.0.1:8000/ 
 
-Copy and paste this link in any of the supported browsers (Firefox, Chrome, and Microsoft Edge) by simply copying and pasting it into the address bar.
+Copy and paste this link in the address bar of any of the supported browsers (Firefox, Chrome, and Microsoft Edge).
 
-Upload an image and press Send button:
+Upload an image and press Send button. We have provided sample images for users in the "detection_labels/images/" folder.
 
 
 ![Alt ](/Fig/Demo_prototype.jpg)
 
 
-The output will be processed image and resulting table 
+The output will be processed image and a resulting table like the one below would be provided. 
 
 
 ![Alt ](/Fig/Demo_prototype2.jpg)
