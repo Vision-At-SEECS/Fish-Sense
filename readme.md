@@ -26,7 +26,7 @@ There are four datasets available that can be utilized for training deep learnin
 
 The code required to train the models from scratch can be found in the supporting materials, specifically under the "colab training - file" folder. By using this code, you can obtain the weights and set up the models as per your needs.
 
-Alternatively, if you prefer to use pre-trained models, you can directly request them from the authors. Once obtained, simply place the trained models in the designated "trained models" folder for seamless integration into your project.
+Alternatively, if you prefer to use pre-trained models, you can directly request them from the authors. Once obtained, simply place the trained models in the designated "trained_models" folder for seamless integration into your project.
 
 ## Requirements
 -   Python > 3.7
